@@ -22,6 +22,8 @@ module IntLike.Map
   , filter
   , restrictKeys
   , map
+  , traverseWithKey
+  , traverseMaybeWithKey
   , insertState
   , mapWithKey
   )
@@ -126,10 +128,35 @@ map :: (a -> b) -> IntLikeMap x a -> IntLikeMap x b
 map f = IntLikeMap . IntMap.map f . unIntLikeMap
 {-# INLINE map #-}
 
+mapWithKey :: Coercible x Int => (x -> a -> b) -> IntLikeMap x a -> IntLikeMap x b
+mapWithKey f = IntLikeMap . IntMap.mapWithKey (\x a -> f (coerce x) a) . unIntLikeMap
+{-# INLINE mapWithKey #-}
+
+traverseWithKey :: (Coercible x Int, Applicative f) => (x -> a -> f b) -> IntLikeMap x a -> f (IntLikeMap x b)
+traverseWithKey f = fmap IntLikeMap . IntMap.traverseWithKey (coerce f) . unIntLikeMap
+{-# INLINE traverseWithKey #-}
+
+traverseMaybeWithKey :: (Coercible x Int, Applicative f) => (x -> a -> f (Maybe b)) -> IntLikeMap x a -> f (IntLikeMap x b)
+traverseMaybeWithKey f = fmap IntLikeMap . IntMap.traverseMaybeWithKey (coerce f) . unIntLikeMap
+{-# INLINE traverseMaybeWithKey #-}
+
+union :: IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
+union l r = IntLikeMap (IntMap.union (unIntLikeMap l) (unIntLikeMap r))
+{-# INLINE union #-}
+
+unionWith :: (a -> a -> a) -> IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
+unionWith f l r = IntLikeMap (IntMap.unionWith f (unIntLikeMap l) (unIntLikeMap r))
+{-# INLINE unionWith #-}
+
+update :: Coercible x Int => (a -> Maybe a) -> x -> IntLikeMap x a -> IntLikeMap x a
+update f x m = IntLikeMap (IntMap.update f (coerce x) (unIntLikeMap m))
+{-# INLINE update #-}
+
+partition :: (a -> Bool) -> IntLikeMap x a -> (IntLikeMap x a, IntLikeMap x a)
+partition f m = case IntMap.partition f (unIntLikeMap m) of
+   (l,r) -> (IntLikeMap l, IntLikeMap r)
+{-# INLINE partition #-}
+
 insertState :: Coercible x Int => (Maybe a -> b) -> x -> a -> IntLikeMap x a -> (b, IntLikeMap x a)
 insertState f x a = coerce . IntMap.alterF (\m -> (f m, Just a)) (coerce x) . unIntLikeMap
 {-# INLINE insertState #-}
-
-mapWithKey :: Coercible x Int => (x -> a -> b) -> IntLikeMap x a -> IntLikeMap x b
-mapWithKey f = IntLikeMap . IntMap.mapWithKey (coerce f) . unIntLikeMap
-{-# INLINE mapWithKey #-}
