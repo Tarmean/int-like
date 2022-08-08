@@ -26,8 +26,11 @@ module IntLike.Map
   , traverseMaybeWithKey
   , insertState
   , mapWithKey
-  )
-where
+  , union
+  , unionWith
+  , partition
+  , split
+  ) where
 
 import Control.DeepSeq (NFData)
 import Data.Coerce (Coercible, coerce)
@@ -157,6 +160,13 @@ partition f m = case IntMap.partition f (unIntLikeMap m) of
    (l,r) -> (IntLikeMap l, IntLikeMap r)
 {-# INLINE partition #-}
 
+split :: (Coercible x Int) => x -> IntLikeMap x a -> (IntLikeMap x a, IntLikeMap x a)
+split x m = case IntMap.split (coerce x) (unIntLikeMap m) of
+   (l,r) -> (IntLikeMap l, IntLikeMap r)
+{-# INLINE split #-}
+
 insertState :: Coercible x Int => (Maybe a -> b) -> x -> a -> IntLikeMap x a -> (b, IntLikeMap x a)
 insertState f x a = coerce . IntMap.alterF (\m -> (f m, Just a)) (coerce x) . unIntLikeMap
 {-# INLINE insertState #-}
+
+
