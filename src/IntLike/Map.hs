@@ -29,6 +29,7 @@ module IntLike.Map
   , union
   , difference
   , unionWith
+  , intersectionWithMaybe
   , partition
   , split
   ) where
@@ -36,6 +37,7 @@ module IntLike.Map
 import Control.DeepSeq (NFData)
 import Data.Coerce (Coercible, coerce)
 import Data.IntMap.Strict (IntMap)
+import Data.IntMap.Merge.Strict as IM
 import qualified Data.IntMap.Strict as IntMap
 import IntLike.Set (IntLikeSet (..))
 import Prelude hiding (filter, lookup, map, null)
@@ -155,6 +157,10 @@ difference l r = IntLikeMap (IntMap.difference (unIntLikeMap l) (unIntLikeMap r)
 unionWith :: (a -> a -> a) -> IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
 unionWith f l r = IntLikeMap (IntMap.unionWith f (unIntLikeMap l) (unIntLikeMap r))
 {-# INLINE unionWith #-}
+
+intersectionWithMaybe :: Coercible x Int => (x -> a -> a -> Maybe a) -> IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
+intersectionWithMaybe f l r = IntLikeMap (IM.merge IM.dropMissing IM.dropMissing (IM.zipWithMaybeMatched (\x -> f (coerce x))) (unIntLikeMap l) (unIntLikeMap r))
+{-# INLINE intersectionWithMaybe #-}
 
 update :: Coercible x Int => (a -> Maybe a) -> x -> IntLikeMap x a -> IntLikeMap x a
 update f x m = IntLikeMap (IntMap.update f (coerce x) (unIntLikeMap m))
