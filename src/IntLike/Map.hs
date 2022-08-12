@@ -152,7 +152,7 @@ union :: IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
 union l r = IntLikeMap (IntMap.union (unIntLikeMap l) (unIntLikeMap r))
 {-# INLINE union #-}
 
-difference :: IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
+difference :: IntLikeMap x a -> IntLikeMap x o -> IntLikeMap x a
 difference l r = IntLikeMap (IntMap.difference (unIntLikeMap l) (unIntLikeMap r))
 {-# INLINE difference #-}
 
