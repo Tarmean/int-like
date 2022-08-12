@@ -30,6 +30,7 @@ module IntLike.Map
   , difference
   , unionWith
   , unionWithMaybe
+  , unionWithMaybeA
   , intersectionWithMaybe
   , intersectionWithMaybeA
   , partition
@@ -166,6 +167,10 @@ unionWith f l r = IntLikeMap (IntMap.unionWith f (unIntLikeMap l) (unIntLikeMap 
 unionWithMaybe :: Coercible x Int => (x -> a -> a -> Maybe a) -> IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
 unionWithMaybe f l r = IntLikeMap (IM.merge IM.preserveMissing IM.preserveMissing (IM.zipWithMaybeMatched (\x -> f (coerce x))) (unIntLikeMap l) (unIntLikeMap r))
 {-# INLINE unionWithMaybe #-}
+
+unionWithMaybeA :: (Applicative f, Coercible x Int) => (x -> a -> a -> f (Maybe a)) -> IntLikeMap x a -> IntLikeMap x a -> f (IntLikeMap x a)
+unionWithMaybeA f l r = IntLikeMap (IM.mergeA IM.preserveMissing IM.preserveMissing (IM.zipWithMaybeAMatched (\x -> f (coerce x))) (unIntLikeMap l) (unIntLikeMap r))
+{-# INLINE unionWithMaybeA #-}
 
 intersectionWithMaybe :: Coercible x Int => (x -> a -> a -> Maybe a) -> IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
 intersectionWithMaybe f l r = IntLikeMap (IM.merge IM.dropMissing IM.dropMissing (IM.zipWithMaybeMatched (\x -> f (coerce x))) (unIntLikeMap l) (unIntLikeMap r))
