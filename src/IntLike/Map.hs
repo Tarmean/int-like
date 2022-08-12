@@ -43,6 +43,7 @@ import Data.IntMap.Merge.Strict as IM
 import qualified Data.IntMap.Strict as IntMap
 import IntLike.Set (IntLikeSet (..))
 import Prelude hiding (filter, lookup, map, null)
+import GHC.Stack (HasCallStack)
 
 newtype IntLikeMap x a = IntLikeMap {unIntLikeMap :: IntMap a}
   deriving stock (Show, Traversable)
@@ -92,8 +93,10 @@ lookup :: Coercible x Int => x -> IntLikeMap x a -> Maybe a
 lookup x = IntMap.lookup (coerce x) . unIntLikeMap
 {-# INLINE lookup #-}
 
-partialLookup :: Coercible x Int => x -> IntLikeMap x a -> a
-partialLookup x m = unIntLikeMap m IntMap.! coerce x
+partialLookup :: (HasCallStack, Coercible x Int) => x -> IntLikeMap x a -> a
+partialLookup x m = case unIntLikeMap m IntMap.!? coerce x of
+    Nothing -> error ("IntLikeMap.!: key " <> show (coerce x :: Int) <> "is not an element of the map")
+    Just a -> a
 {-# INLINE partialLookup #-}
 
 findWithDefault :: Coercible x Int => a -> x -> IntLikeMap x a -> a
