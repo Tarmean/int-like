@@ -29,7 +29,9 @@ module IntLike.Map
   , union
   , difference
   , unionWith
+  , unionWithMaybe
   , intersectionWithMaybe
+  , intersectionWithMaybeA
   , partition
   , split
   ) where
@@ -158,9 +160,18 @@ unionWith :: (a -> a -> a) -> IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
 unionWith f l r = IntLikeMap (IntMap.unionWith f (unIntLikeMap l) (unIntLikeMap r))
 {-# INLINE unionWith #-}
 
+unionWithMaybe :: Coercible x Int => (x -> a -> a -> Maybe a) -> IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
+unionWithMaybe f l r = IntLikeMap (IM.merge IM.preserveMissing IM.preserveMissing (IM.zipWithMaybeMatched (\x -> f (coerce x))) (unIntLikeMap l) (unIntLikeMap r))
+{-# INLINE unionWithMaybe #-}
+
 intersectionWithMaybe :: Coercible x Int => (x -> a -> a -> Maybe a) -> IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
 intersectionWithMaybe f l r = IntLikeMap (IM.merge IM.dropMissing IM.dropMissing (IM.zipWithMaybeMatched (\x -> f (coerce x))) (unIntLikeMap l) (unIntLikeMap r))
 {-# INLINE intersectionWithMaybe #-}
+
+-- Really should just expose everything
+intersectionWithMaybeA :: (Applicative f, Coercible x Int) => (x -> a -> a -> f (Maybe a)) -> IntLikeMap x a -> IntLikeMap x a -> f (IntLikeMap x a)
+intersectionWithMaybeA f l r = fmap IntLikeMap (IM.mergeA IM.dropMissing IM.dropMissing (IM.zipWithMaybeAMatched (\x -> f (coerce x))) (unIntLikeMap l) (unIntLikeMap r))
+{-# INLINE intersectionWithMaybeA #-}
 
 update :: Coercible x Int => (a -> Maybe a) -> x -> IntLikeMap x a -> IntLikeMap x a
 update f x m = IntLikeMap (IntMap.update f (coerce x) (unIntLikeMap m))
