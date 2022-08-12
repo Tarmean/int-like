@@ -48,7 +48,7 @@ import GHC.Stack (HasCallStack)
 
 newtype IntLikeMap x a = IntLikeMap {unIntLikeMap :: IntMap a}
   deriving stock (Show, Traversable)
-  deriving newtype (Eq, Functor, Foldable, NFData, Semigroup, Monoid)
+  deriving newtype (Eq, Functor, Foldable, NFData, Semigroup, Monoid, Ord)
 
 empty :: IntLikeMap x a
 empty = IntLikeMap IntMap.empty
