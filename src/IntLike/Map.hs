@@ -169,7 +169,7 @@ unionWithMaybe f l r = IntLikeMap (IM.merge IM.preserveMissing IM.preserveMissin
 {-# INLINE unionWithMaybe #-}
 
 unionWithMaybeA :: (Applicative f, Coercible x Int) => (x -> a -> a -> f (Maybe a)) -> IntLikeMap x a -> IntLikeMap x a -> f (IntLikeMap x a)
-unionWithMaybeA f l r = IntLikeMap (IM.mergeA IM.preserveMissing IM.preserveMissing (IM.zipWithMaybeAMatched (\x -> f (coerce x))) (unIntLikeMap l) (unIntLikeMap r))
+unionWithMaybeA f l r = fmap IntLikeMap (IM.mergeA IM.preserveMissing IM.preserveMissing (IM.zipWithMaybeAMatched (\x -> f (coerce x))) (unIntLikeMap l) (unIntLikeMap r))
 {-# INLINE unionWithMaybeA #-}
 
 intersectionWithMaybe :: Coercible x Int => (x -> a -> a -> Maybe a) -> IntLikeMap x a -> IntLikeMap x a -> IntLikeMap x a
